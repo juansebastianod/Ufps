@@ -1,13 +1,16 @@
-import express from 'express'
+import express from "express";
+import adminRoutes from './routes/adminRoutes.js'
 
-const app = express()
+const app = express();
+const PORT = process.env.PORT ?? 3000;
 
-const PORT = process.env.PORT ?? 3000
+app.use(express.json());
+app.use("/admin", adminRoutes); // prefijo /admin para todo lo del admin
 
-app.get('/', (request, response) => {
-  response.send('Hello World!')
-})
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});
