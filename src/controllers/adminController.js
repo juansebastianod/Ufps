@@ -1,6 +1,6 @@
 
 import { createUser,createRoom } from "../services/adminService.js";
-import { loginServices } from "../services/sesion.js";
+import { loginServices } from "../services/authService.js";
 import { pool } from "../db.js";
 import bcrypt from 'bcryptjs';
 
@@ -72,12 +72,3 @@ export const registerRoomController = async (req, res) => {
   };
   
 
-  export const login = async (req, res) => {
-    const { correo, password } = req.body;
-    const response=await loginServices(correo,password);
-    res.cookie('token', response.token);
-    res.status(response.status).json({
-        message:response.message,
-    });
-    
-};
