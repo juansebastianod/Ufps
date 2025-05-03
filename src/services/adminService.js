@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 
 export const createUser = async (userData) => {
   try {
-    // Hashear contraseña antes de guardar
+    // Hash the password before saving
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const userWithHash = {
       ...userData,
@@ -13,23 +13,25 @@ export const createUser = async (userData) => {
 
     const result = await registerUser(userWithHash);
 
-    const roleName = userData.rol_id === 6 ? 'Vigilante' :
-                     userData.rol_id === 5 ? 'Estudiante' :
-                     'Usuario';
+    // Determine role name based on role_id
+    const roleName = userData.role_id === 3 ? 'Vigilante' :
+                     userData.role_id === 2 ? 'Student' :
+                     'User';
 
     return {
       status: 201,
-      message: `${roleName} registrado exitosamente.`,
+      message: `${roleName} registered successfully.`,
       data: result
     };
   } catch (error) {
-    console.error("Error al registrar usuario:", error);
+    console.error("Error registering user:", error);
     return {
       status: 500,
-      message: "Error al registrar usuario."
+      message: "Error registering user."
     };
   }
 };
+
 
 
 export const createRoom = async (roomData) => {

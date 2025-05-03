@@ -1,28 +1,35 @@
 
 import { createUser,createRoom } from "../services/adminService.js";
-import { loginServices } from "../services/authService.js";
 import { pool } from "../db.js";
 import bcrypt from 'bcryptjs';
 
 
 export const registerAdmin = async (req, res) => {
-    const { nombre, correo, password, codigo } = req.body;
-    const roleId = 4;
+    const { name, email, password, code, id_number } = req.body;  // Uso de nombres en inglés
+    const roleId = 1;  // Asignando 1 como el rol de Admin (por defecto)
 
     try {
+        // Encriptar la contraseña
         const passwordHash = await bcrypt.hash(password, 10);
+
+        // Consultar la base de datos, permitiendo valores nulos en email y id_number
         const query = `
-            INSERT INTO usuarios (nombre, correo, password, codigo, rol_id)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING id, nombre, correo, codigo, rol_id
+            INSERT INTO users (name, email, password, code, role_id, id_number)  -- Cambio de nombres a inglés
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, name, email, code, role_id, id_number
         `;
-        const values = [nombre, correo, passwordHash, codigo, roleId];
+        
+        // Si email o id_number no se proporcionan, se les asigna un valor null
+        const values = [name, email || null, passwordHash, code, roleId, id_number || null];
+
+        // Ejecutar la consulta
         const { rows } = await pool.query(query, values);
 
+        // Verificar si se insertó correctamente
         if (rows.length > 0) {
             res.status(201).json(rows[0]);
         } else {
-            throw new Error('No se pudo registrar el usuario ADMIN');
+            throw new Error('Unable to register Admin user');
         }
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -30,16 +37,17 @@ export const registerAdmin = async (req, res) => {
 };
 
 
+export const registerGuardtController = async (req, res) => {
+    const { name, email, password, code, id_number } = req.body;
 
-export const registerVigilantController = async (req, res) => {
-    const { nombre, correo, password, codigo } = req.body;
-
+    console.log("ENTROO")
     const vigilant = {
-        nombre,
-        correo,
+        name,
+        email,
         password,
-        codigo,
-        rol_id: 6 
+        code,
+        id_number, // Número de cédula
+        role_id: 3  // Role ID para Vigilante
     };
 
     const response = await createUser(vigilant);
@@ -47,19 +55,21 @@ export const registerVigilantController = async (req, res) => {
 };
 
 export const registerStudentController = async (req, res) => {
-    const { nombre, correo, password, codigo } = req.body;
+    const { name, email, password, code, id_number } = req.body;
 
-    const vigilant = {
-        nombre,
-        correo,
+    const student = {
+        name,
+        email,
         password,
-        codigo,
-        rol_id: 5
+        code,
+        id_number, // Número de cédula
+        role_id: 2  // Role ID para Estudiante
     };
 
-    const response = await createUser(vigilant);
+    const response = await createUser(student);
     res.status(response.status).json({ message: response.message });
 };
+
 
 
 export const registerRoomController = async (req, res) => {

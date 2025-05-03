@@ -3,76 +3,83 @@ import { tokenAcceso } from '../lib/jwt.js';
 import bcrypt from 'bcryptjs';
 
 export const registerUser = async (user) => {
-    const query = `
-      INSERT INTO usuarios (nombre, correo, password, codigo, rol_id)
-      VALUES ($1, LOWER(TRIM($2)), $3, TRIM($4), $5)
-      RETURNING id, nombre, correo, codigo, rol_id
-    `;
-    const values = [
-      user.nombre,
-      user.correo,
-      user.password,
-      user.codigo,
-      user.rol_id
-    ];
-  
-    const { rows } = await pool.query(query, values);
-    return rows.length > 0 ? rows[0] : null;
-  };
-  
+  const query = `
+    INSERT INTO users (name, email, password, code, role_id, id_number)  -- Todos los campos en inglés
+    VALUES ($1, LOWER(TRIM($2)), $3, TRIM($4), $5, $6)
+    RETURNING id, name, email, code, role_id, id_number  -- Campos de retorno
+  `;
+  const values = [
+    user.name,    
+    user.email,  
+    user.password, 
+    user.code,    
+    user.role_id, 
+    user.id_number 
+  ];
+
+  const { rows } = await pool.query(query, values);
+  return rows.length > 0 ? rows[0] : null;
+};
 
 
-export const loginRepository = async (correo) => {
-    try {
-        const userFound = await verificaUser(correo)
-        const payload = {
-            id: userFound.found.id,
-            role: userFound.found.role_id 
-        };
-        const token = await tokenAcceso(payload);
-        const objeto ={
-          token:token,
-          message: "Inicio de sesion",
-          status:201,
-        }
-        return objeto
-    } catch (error) {
-        console.error('Error en login:', error.message);
-    }
-  };
-  
-  export const verificaUser=async (correo) => {
-      const query = `
-      SELECT id, correo, password, rol_id
-      FROM usuarios
-      WHERE correo = $1
-      `;
-      const { rows } = await pool.query(query, [correo]);
-      if (rows.length === 0) {
-          const objeto ={
-              verdad:true,
-              found:[]
-          }
-          return objeto;
-      }else{
-  
-          const objeto={
-              verdad:false,
-              found:rows[0]
-          }
-          return objeto;
+
+export const loginRepository = async (email) => {
+  try {
+      const user = await findUserByEmail(email);
+      if (user.notFound) {
+          return {
+              status: 404,
+              message: "User not found"
+          };
       }
-  
+
+      const payload = {
+          id: user.data.id,
+          role: user.data.role_id
+      };
+
+      const token = await generateAccessToken(payload);
+
+      return {
+          token,
+          message: "Login successful",
+          status: 201
+      };
+  } catch (error) {
+      console.error('Login error:', error.message);
+      return {
+          status: 500,
+          message: "Server error during login"
+      };
+  }
+};
+
+export const findUserByEmail = async (email) => {
+  const query = `
+      SELECT id, email, password, role_id
+      FROM users
+      WHERE email = $1
+  `;
+  const { rows } = await pool.query(query, [email]);
+
+  if (rows.length === 0) {
+      return {
+          notFound: true,
+          data: null
+      };
   }
 
+  return {
+      notFound: false,
+      data: rows[0]
+  };
+};
 
-  export const verificaPassword=async (password,correo) => {
-   
-    const userFound = await verificaUser(correo);
-    const isMatch = await bcrypt.compare(password, userFound.found.password);
-    if (!isMatch) {
-       return false
-    }else{
-        return true
-    }
-  }
+
+export const verifyPassword = async (password, email) => {
+  const user = await findUserByEmail(email);
+
+  if (user.notFound) return false;
+
+  return await bcrypt.compare(password, user.data.password);
+};

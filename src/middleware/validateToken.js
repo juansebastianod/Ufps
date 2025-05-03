@@ -17,7 +17,7 @@ export const authRequired = async (req, res, next) => {
             // Verificar si el usuario existe en la base de datos
             const { id, role } = decoded;
             const query = `
-                SELECT * FROM usuarios
+                SELECT * FROM users
                 WHERE id = $1
             `;
             const { rows } = await pool.query(query, [id]);

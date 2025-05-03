@@ -1,11 +1,13 @@
 import express from "express";
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js'; // puedes renombrarlo si maneja todos los roles
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Rutas sin prefijo
 app.use(authRoutes); // <-- sin prefijo para login

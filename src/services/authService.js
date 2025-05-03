@@ -1,59 +1,58 @@
-import { verificaUser,loginRepository,verificaPassword } from "../repositories/usuarioRepository.js";
+import { findUserByEmail, verifyPassword , loginRepository } from "../repositories/usuarioRepository.js";
 import { tokenAcceso } from "../lib/jwt.js";
 import bcrypt from 'bcryptjs';
 
-export const loginServices = async (correo, password, rol_id) => {
-    const user = await verificaUser(correo);
+export const loginService = async (email, password, role_id) => {
+    const user = await findUserByEmail(email);
 
-    if (user.verdad) {
+    if (user.notFound) {
         return {
             status: 400,
-            message: "Usuario no existente",
+            message: "User does not exist",
             data: null
         };
     }
 
-    if (user.found.rol_id !== rol_id) {
+    if (user.data.role_id !== role_id) {
         return {
             status: 403,
-            message: "Rol incorrecto para este usuario",
+            message: "Incorrect role for this user",
             data: null
         };
     }
 
-    const comparePassword = await bcrypt.compare(password, user.found.password);
+    const isPasswordMatch = await bcrypt.compare(password, user.data.password);
 
-    if (!comparePassword) {
+    if (!isPasswordMatch) {
         return {
             status: 400,
-            message: "Contraseña incorrecta",
+            message: "Incorrect password",
             data: null
         };
     }
 
     const token = await tokenAcceso({
-        id: user.found.id,
-        role: user.found.rol_id
+        id: user.data.id,
+        role: user.data.role_id
     });
 
-    let rolMessage = "Inicio de sesión";
+    let roleMessage = "Login successful";
 
-    switch (rol_id) {
-        case 4:
-            rolMessage = "Inicio de sesión del Administrador";
+    switch (role_id) {
+        case 1:
+            roleMessage = "Admin login successful";
             break;
-        case 5:
-            rolMessage = "Inicio de sesión del Estudiante";
+        case 2:
+            roleMessage = "Student login successful";
             break;
-        case 6:
-            rolMessage = "Inicio de sesión del Vigilante";
+        case 3:
+            roleMessage = "Vigilant login successful";
             break;
     }
 
     return {
         status: 201,
-        message: rolMessage,
+        message: roleMessage,
         token
     };
 };
-
