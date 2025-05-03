@@ -1,19 +1,32 @@
 import { registerUser } from "../repositories/usuarioRepository.js";
 import { registerRoom } from "../repositories/salaRepository.js";
+import bcrypt from 'bcryptjs';
 
-export const createUser= async (vigilantData) => {
+export const createUser = async (userData) => {
   try {
-    const result = await registerUser(vigilantData);
+    // Hashear contraseña antes de guardar
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const userWithHash = {
+      ...userData,
+      password: hashedPassword
+    };
+
+    const result = await registerUser(userWithHash);
+
+    const roleName = userData.rol_id === 6 ? 'Vigilante' :
+                     userData.rol_id === 5 ? 'Estudiante' :
+                     'Usuario';
+
     return {
       status: 201,
-      message: "Vigilante registrado exitosamente.",
+      message: `${roleName} registrado exitosamente.`,
       data: result
     };
   } catch (error) {
-    console.error("Error al registrar vigilante:", error);
+    console.error("Error al registrar usuario:", error);
     return {
       status: 500,
-      message: "Error al registrar vigilante."
+      message: "Error al registrar usuario."
     };
   }
 };
