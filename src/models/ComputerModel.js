@@ -3,8 +3,8 @@
 export class Computer {
     constructor(id, number, room_id, status) {
         this.id = id;
-        this.number = number;  // Computer number
-        this.room_id = room_id;  // Room ID where the computer is located
-        this.status = status;  // Status of the computer (if it is available or not)
+        this.number = number;
+        this.room_id = room_id;
+        this.status = status; // true = disponible, false = en uso
     }
 }

@@ -1,4 +1,4 @@
-import { registerUser } from "../repositories/usuarioRepository.js";
+import { registerUser ,getVigilantUsers , getStudentsByFilters } from "../repositories/usuarioRepository.js";
 import { registerRoom } from "../repositories/salaRepository.js";
 import bcrypt from 'bcryptjs';
 
@@ -49,4 +49,24 @@ export const createRoom = async (roomData) => {
       message: "Error al registrar sala."
     };
   }
+};
+
+export const getVigilantsService = async () => {
+  try {
+      const vigilants = await getVigilantUsers();
+      return vigilants;
+  } catch (error) {
+      throw new Error('Error al obtener usuarios vigilantes en el servicio');
+  }
+};
+
+
+
+export const getFilteredStudentsService = async (name, email) => {
+    try {
+        const students = await getStudentsByFilters(name, email);
+        return students;
+    } catch (error) {
+        throw new Error('Error al obtener estudiantes filtrados: ' + error.message);
+    }
 };

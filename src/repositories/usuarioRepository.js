@@ -83,3 +83,45 @@ export const verifyPassword = async (password, email) => {
 
   return await bcrypt.compare(password, user.data.password);
 };
+
+
+export const getVigilantUsers = async () => {
+  const query = `
+      SELECT name, code, id_number
+      FROM users
+      WHERE role_id = 3
+  `;
+  
+  try {
+      const { rows } = await pool.query(query);
+      return rows;
+  } catch (error) {
+      console.error('Error al obtener usuarios vigilantes:', error.message);
+      throw error;
+  }
+};
+
+
+export const getStudentsByFilters = async (name = null, email = null) => {
+  try {
+      // Empezamos con la consulta base
+      let query = 'SELECT name, code, id_number FROM users WHERE role_id = 2'; // Estudiantes tienen role_id = 2
+
+      // Añadimos filtros dinámicos
+      const filters = [];
+      if (name) {
+          query += ' AND name ILIKE $1';
+          filters.push(`%${name}%`);
+      }
+      if (email) {
+          query += ' AND email ILIKE $2';
+          filters.push(`%${email}%`);
+      }
+
+      // Ejecutamos la consulta con los filtros
+      const { rows } = await pool.query(query, filters);
+      return rows;
+  } catch (error) {
+      throw new Error('Error al obtener estudiantes con filtros: ' + error.message);
+  }
+};

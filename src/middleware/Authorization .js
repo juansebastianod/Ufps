@@ -1,8 +1,6 @@
 export const authorizeAdmin = (req, res, next) => {
     try {
         // Asegúrate de que req.user y req.user.role están definidos
-        console.log("juan sebastian ")
-        console.log(req.user)
         if (!req.user || req.user.role !== 1) {
             return res.status(403).json({ message: 'Acceso denegado, solo administradores' });
         }

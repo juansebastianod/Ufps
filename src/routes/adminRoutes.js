@@ -5,15 +5,18 @@ import {
     registerGuardtController, 
     registerStudentController,
     registerRoomController,
-    registerAdmin
+    registerAdmin,
+    listVigilantsController,
+    getFilteredStudentsController
 
 } from "../controllers/adminController.js";
 const router = Router();
 
-
+router.post('/register_admin',registerAdmin);
 router.post("/register_guard",authRequired,authorizeAdmin, registerGuardtController );
 router.post("/register_student",authRequired,authorizeAdmin, registerStudentController);
-router.post('/register_admin',registerAdmin);
+router.get('/vigilants', listVigilantsController);
+router.post('/students/filter', getFilteredStudentsController);
 router.post("/rooms", registerRoomController);
 
 

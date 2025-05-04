@@ -1,5 +1,5 @@
 
-import { createUser,createRoom } from "../services/adminService.js";
+import { createUser,createRoom , getVigilantsService,getFilteredStudentsService} from "../services/adminService.js";
 import { pool } from "../db.js";
 import bcrypt from 'bcryptjs';
 
@@ -39,8 +39,6 @@ export const registerAdmin = async (req, res) => {
 
 export const registerGuardtController = async (req, res) => {
     const { name, email, password, code, id_number } = req.body;
-
-    console.log("ENTROO")
     const vigilant = {
         name,
         email,
@@ -81,4 +79,29 @@ export const registerRoomController = async (req, res) => {
     res.status(response.status).json({ message: response.message, data: response.data });
   };
   
+
+  export const listVigilantsController = async (req, res) => {
+    try {
+        const vigilants = await getVigilantsService();
+        return res.status(200).json(vigilants);
+    } catch (error) {
+        console.error('Error en el controlador:', error.message);
+        return res.status(500).json({ message: 'Error al obtener vigilantes' });
+    }
+};
+
+export const getFilteredStudentsController = async (req, res) => {
+    const { name, email } = req.body; // Esperamos que estos parámetros vengan en el body de la solicitud
+    
+    try {
+        // Si no hay parámetros de filtro, mostramos todos los estudiantes
+        const students = await getFilteredStudentsService(name, email);
+        
+        // Retornamos los estudiantes
+        return res.status(200).json(students);
+    } catch (error) {
+        console.error('Error en el controlador:', error.message);
+        return res.status(500).json({ message: 'Error al obtener estudiantes filtrados' });
+    }
+};
 
